@@ -2,8 +2,8 @@ extends layout
 
 block content
   h1= title
-  h2= error.status
-  p= "Sorry! We couldn't find the page you were looking for."
+  //- h2= error.status
+  p= "Sorry! " + msg
   br
   p 
     a.button(href = "/books") Home

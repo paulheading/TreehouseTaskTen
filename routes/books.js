@@ -6,25 +6,31 @@ const express = require('express'),
 function asyncHandler(cb){
   return async(req, res, next) => {
     try {
-      await cb(req, res, next)
+      await cb(req, res, next);
     } catch(error){
       res.status(500).send(error);
     }
   }
 }
 
-// Shows the full list of books
+/* GET books listing. */
 
 router.get('/', asyncHandler(async (req, res) => {
   const books = await Book.findAll();
   res.render('books/index', { books, title : "Books" });
 }));
 
-// Shows the create new book form.
+/* GET individual book. */
 
-router.get('/new', (req, res) => {
-  res.render('books/new', { book : {}, title : "New Book" });
-});
+router.get("/:id", asyncHandler(async (req, res) => {
+  const book = await Book.findByPk(req.params.id);
+
+  if (book) {
+    res.render("books/show", { book, title : book.title });
+  } else {
+    res.render("error",{ title : "Server Error", msg : "There was an unexpected error on the server." });
+  }
+}));
 
 /* POST create book. */
 
@@ -43,18 +49,6 @@ router.post('/', asyncHandler(async (req, res) => {
   }
 }));
 
-/* GET individual book. */
-
-router.get("/:id", asyncHandler(async (req, res) => {
-  const book = await Book.findByPk(req.params.id);
-
-  if (book) {
-    res.render("books/show", { book, title : book.title });
-  } else {
-    res.sendStatus(500);
-  }
-}));
-
 /* Update a book. */
 
 router.post('/:id/edit', asyncHandler(async (req, res) => {
@@ -66,13 +60,13 @@ router.post('/:id/edit', asyncHandler(async (req, res) => {
       await book.update(req.body);
       res.redirect("/books/");
     } else {
-      res.sendStatus(500);
+      res.sendStatus(404);
     }
   } catch (error) {
     if(error.name === "SequelizeValidationError") {
       book = await Book.build(req.body);
       book.id = req.params.id;
-      res.render("/books/" + books.id + "/edit", { book, errors: error.errors, title: "Edit Book" })
+      res.render("books/show", { book, errors: error.errors, title: "Edit Book" })
     } else {
       throw error;
     }
@@ -88,7 +82,7 @@ router.post('/:id/delete', asyncHandler(async (req ,res) => {
     await book.destroy();
     res.redirect("/books");
   } else {
-    res.sendStatus(500);
+    res.sendStatus(404);
   }
 }));
 

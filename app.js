@@ -28,24 +28,14 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use( (err, req, res, next) => {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
-
-  if (err.status == 500) {
-    res.status(500);
-    res.render('error',{ title : "Server Error!" });
-  } else if (err.status == 404) {
-    res.status(404);
-    res.render('error',{ title : "Page Not Found!" });
-  } else {
-    res.status(err.status);
-    res.render('error',{ title : "Not Found!" });
-  }
-
+  res.status(err.status || 500);
+  res.render("error", { error : err, title : "Page Not Found", msg : "We couldn't find the page you were looking for." });
 });
 
 module.exports = app;
